@@ -1,8 +1,15 @@
-from django.forms import ModelForm
+from django.forms import ModelForm, ValidationError
 from MainApp.models import Snippet
 
 class SnippetForm(ModelForm):
-   class Meta:
+    class Meta:
        model = Snippet
        # Описываем поля, которые будем заполнять в форме
        fields = ['name', 'lang', 'code']
+
+    # Проверка поля "тфьу"
+    def clean_name(self):
+        snippet_name = self.cleaned_data.get("name")
+        if len(snippet_name) > 3:
+            return snippet_name
+        raise ValidationError("Snippet name too short")

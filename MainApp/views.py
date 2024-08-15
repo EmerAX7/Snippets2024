@@ -1,4 +1,4 @@
-from django.http import Http404, HttpResponseNotFound
+from django.http import Http404, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect
 from MainApp.models import Snippet
 from MainApp.forms import SnippetForm
@@ -38,3 +38,12 @@ def snippet_detail(request, snippet_id: int):
             "snippet": snippet,
         }
         return render(request, "pages/snippet_detail.html", context)
+
+def create_snippet(request):
+    from pprint import pprint
+    if request.method == "POST":
+        form = SnippetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("snippets-list")
+        return render(request, "pages/add_snippet.html", {'form': form})  # ошибка валидации - отправляем на страницу добавления сниппепа и передаём данные для заполнения формы
