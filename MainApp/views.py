@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from MainApp.models import Snippet
 from MainApp.forms import SnippetForm
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib import auth
 
 
 def index_page(request):
@@ -23,7 +24,10 @@ def add_snippet_page(request):
     elif request.method == "POST":
         form = SnippetForm(request.POST)
         if form.is_valid():
-            form.save()
+            snippet = form.save(commit=False)
+            if request.user.is_authenticated:
+                snippet.user = request.user
+                snippet.save()
             return redirect("snippets-list")
         return render(request, "pages/add_snippet.html", {'form': form})  # ошибка валидации - отправляем на страницу добавления сниппепа и передаём данные для заполнения формы
 
@@ -90,3 +94,20 @@ def snippet_delete(request, snippet_id: int):
         snippet = get_object_or_404(Snippet, id=snippet_id)
         snippet.delete()
     return redirect("snippets-list")
+
+
+def login(request):
+    if request.method == 'POST':
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = auth.authenticate(request, username = username, password = password)
+        if user is not None:
+            auth.login(request, user)
+        else:
+            pass
+    return redirect("home")
+
+
+def logout(request):
+    auth.logout(request)
+    return redirect("home")
